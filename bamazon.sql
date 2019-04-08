@@ -20,3 +20,4 @@ values ('Silk Chiffon Dress', 'Womens', 1500, 3), ('Crystal Earrings', 'Accessor
 ('Cotton T-shirt', 'Womens', 19.55, 25), ('Liquid Lipstick', 'Beauty', 19.45, 45), 
 ('Hair Dryer', 'Beauty', 79.35, 35);
 select * from products
+SELECT  stock_qty  FROM  products WHERE id=3;
