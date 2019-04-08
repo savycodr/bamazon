@@ -4,6 +4,8 @@ var inquirer = require("inquirer");
 // this package will provide the ability to open connection and talk to database
 var mysql = require('mysql');
 
+var Inventory = require('./Inventory');
+
 // create a database connection to the database bamazon
 var connection = mysql.createConnection({
     host: "localhost",
@@ -58,6 +60,16 @@ var displayStore = function(){
         name: "store",
         message: "Welcome to Bamazon",
         choices: items
+      },
+      {
+        type: "input",
+        name: "quantity",
+        message: "How many would you like to buy?",
+        // inquirer expects a true if the answer is valid. If it gets a false, it will continue asking the same question. If it gets a string, it thinks that this is an error message. 
+        validate: function validateQty(name){
+          var isValid = !isNaN(parseInt(name));
+          return isValid || "Quantity should be a number!";
+        }
       }
     ])
     .then(function(inquirerResponse) {
@@ -65,92 +77,43 @@ var displayStore = function(){
       // The item's id will be in the store (this is a primary key)
       var itemID = inquirerResponse.store;
       console.log(itemID);
-      promptQuantity(itemID);
 
-    }); // end of item prompt
+      // The user's requested quantity (how many they want to buy)
+      var requestQty = parseInt(inquirerResponse.quantity);
+      console.log(requestQty);
+
+      // now we know the item and the quantity
+      // need to see if we have enough quantity
+      var queryQty = "SELECT  stock_qty, price  FROM  products WHERE ?";
+      connection.query(queryQty,  
+        {
+          id: itemID
+        },  function(err1,  resQty) {
+          if (err1)
+          {
+            console.log(err1);
+            return err1;
+          }
+          var stockQty = resQty[0].stock_qty;
+          console.log("stock_qty is " + stockQty);
+          // If we don't have enough stock
+          if (stockQty<requestQty)
+          {
+            // prompt the user to enter a new quantity
+            // make a recursive call to promptQuantity
+            console.log("I'm sorry, we only have " +  stockQty + " in stock.");
+            promptQuantity(id)
+          } else{
+            // If we do we need to update the database with a new lower quantity
+            // and display the total cost to the user
+            var price = resQty[0].price;
+            price = price * requestQty;
+            console.log("Your purchase will cost $" + price);
+            var inventory = new Inventory();
+            inventory.modifyQty(connection, itemID, stockQty-requestQty);
+          }
+        }); // end of query
+
+      }); // end of the  prompt
   }); // end of database query for product select
 } // end of displayStore
-
-// this function prompts the user for the amount of an item they wish to purchase
-// id is the primary key for the item 
-function promptQuantity(id)
-{
-  // Create a "Prompt" to ask how many of the item they want to buy.
-  inquirer.prompt([
-    {
-      type: "input",
-      name: "quantity",
-      message: "How many would you like to buy?",
-      // inquirer expects a true if the answer is valid. If it gets a false, it will continue asking the same question. If it gets a string, it thinks that this is an error message. 
-      validate: function validateQty(name){
-        var isValid = !isNaN(parseInt(name));
-        return isValid || "Quantity should be a number!";
-      }
-    }
-  ])
-  .then(function(inquirerResponseQty) {
-
-    // The user's requested quantity (how many they want to buy)
-    var requestQty = parseInt(inquirerResponseQty.quantity);
-    console.log(requestQty);
-    // now we know the item and the quantity
-    // need to see if we have enough quantity
-    var queryQty = "SELECT  stock_qty, price  FROM  products WHERE ?";
-    connection.query(queryQty,  
-      {
-        id: id
-      },  function(err1,  resQty) {
-        if (err1)
-        {
-          console.log(err1);
-          return err1;
-        }
-        var stockQty = resQty[0].stock_qty;
-        console.log("stock_qty is " + stockQty);
-        // If we don't have enough stock
-        if (stockQty<requestQty)
-        {
-          // prompt the user to enter a new quantity
-          // make a recursive call to promptQuantity
-          console.log("I'm sorry, we only have " +  stockQty + " in stock.");
-          promptQuantity(id)
-        } else{
-          // If we do we need to update the database with a new lower quantity
-          // and display the total cost to the user
-          var price = resQty[0].price;
-          price = price * requestQty;
-          console.log("Your purchase will cost $" + price);
-          modifyQty(id, stockQty-requestQty);
-        }
-      });
-
-    }); // end of the quantity prompt
-}
-
-
-// this function will modify the stock_qty in the database
-// id is the primary key for the item we will modify
-// newQty is the new quantity that we want in the stock_qty column of the products table
-function modifyQty(id, newQty)
-{
-    console.log("Updating quantities...\n");
-    var query = connection.query(
-      "UPDATE products SET ? WHERE ?",
-      [
-        {
-          stock_qty: newQty
-        },
-        {
-          id: id
-        }
-      ],
-      function(err, res) {
-        if (err){
-          console.log(err);
-          return(err);
-        }
-        console.log(res.affectedRows + " products updated!\n");
-        // end the database connection
-        connection.end();
-      });
-}
