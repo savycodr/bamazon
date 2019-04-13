@@ -5,7 +5,7 @@ A command line retail application. There are two servers for this application. T
 1. Run npm install 
 ### To run the customer app
 2. On the command line, enter the command "node bamazonCustomer"
-3. You will be presented with all of the items availabl for purchase. Select an item that you would like to purchase, using the arrow keys to move up and down the list.
+3. You will be presented with all of the items available for purchase. Select an item that you would like to purchase, using the arrow keys to move up and down the list.
 4. You will be asked about the quanity you would like to purchase.
 5. When a quantity is entered the command line will display the total cost. Or if there is not enough inventory to complete the purchase, the user will be notified how many items are in stock.
 
