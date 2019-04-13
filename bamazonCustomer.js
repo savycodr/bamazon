@@ -4,6 +4,7 @@ var inquirer = require("inquirer");
 // this package will provide the ability to open connection and talk to database
 var mysql = require('mysql');
 
+// This package will modify quantity in the database
 var Inventory = require('./Inventory');
 
 // create a database connection to the database bamazon
@@ -25,7 +26,8 @@ var connection = mysql.createConnection({
 // Connect to the database
 connection.connect(function(err) {
     if (err) throw err;
-    console.log("connected as id " + connection.threadId);
+    // console.log("connected as id " + connection.threadId);
+    // display the contents that are for sale
     displayStore();
 });
 
@@ -38,7 +40,7 @@ var displayStore = function(){
     var items = [];
     // populate the items for display on the commandline
     for (var i = 0; i < res.length; i++) {
-      console.log(res[i].product_name);
+      // console.log(res[i].product_name);
       var item = "Item: " + res[i].product_name + " Price: $" + res[i].price;
       // The format for the object to be passed into the inquirer prompt choice
       // needs to be in the format of name: value:
@@ -76,11 +78,11 @@ var displayStore = function(){
 
       // The item's id will be in the store (this is a primary key)
       var itemID = inquirerResponse.store;
-      console.log(itemID);
+      // console.log(itemID);
 
       // The user's requested quantity (how many they want to buy)
       var requestQty = parseInt(inquirerResponse.quantity);
-      console.log(requestQty);
+      // console.log(requestQty);
 
       // now we know the item and the quantity
       // need to see if we have enough quantity
@@ -102,7 +104,8 @@ var displayStore = function(){
             // prompt the user to enter a new quantity
             // make a recursive call to promptQuantity
             console.log("I'm sorry, we only have " +  stockQty + " in stock.");
-            promptQuantity(id)
+            connection.end();
+            // promptQuantity(id)
           } else{
             // If we do we need to update the database with a new lower quantity
             // and display the total cost to the user

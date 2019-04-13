@@ -1,5 +1,4 @@
-// A constructor that takes a connection to the database and encapsulates 
-// the inventory data for the store.
+// A constructor that takes a connection to the database and encapsulates the inventory data for the store.
 function Inventory(connection){
 
   // this function will modify the stock_qty in the database

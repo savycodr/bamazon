@@ -152,11 +152,11 @@ function addToInventory()
 
       // The item's id will be in the store (this is a primary key)
       var itemID = inquirerResponse.store;
-      console.log(itemID);
+      // console.log(itemID);
 
       // The user's requested quantity (how many they want to buy)
       var requestQty = parseInt(inquirerResponse.quantity);
-      console.log(requestQty);
+      // console.log(requestQty);
 
       // now we know the item and the quantity
       // need to see what the current quantity is
@@ -171,13 +171,13 @@ function addToInventory()
             return err1;
           }
           var stockQty = resQty[0].stock_qty;
-          console.log("stock_qty is " + stockQty);
+          // console.log("stock_qty is " + stockQty);
 
           inventory.modifyQty(connection, itemID, stockQty+requestQty);
       });
 
     }); // end of prompt
-  }); // end f query
+  }); // end of query
 } // end of addToInventory
 
 // This function adds a new product to the database (a new row)
